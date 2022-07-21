@@ -8,6 +8,12 @@ import (
 	"runtime"
 )
 
+type PipeUnit interface {
+	Run() <-chan int
+	SetDone(<-chan struct{})
+	SetInput(<-chan int)
+}
+
 type Pipeline struct {
 	pipeUnits []PipeUnit
 	elog      *log.Logger
@@ -33,10 +39,7 @@ func PipelineInt(units ...PipeUnit) *Pipeline {
 func (pl *Pipeline) Setup(done <-chan struct{}) *Pipeline {
 	pl.done = done
 	for idx := range pl.pipeUnits {
-		switch pl.pipeUnits[idx].(type) {
-		case *PipeUnitInt:
-			pl.pipeUnits[idx].(*PipeUnitInt).done = done
-		}
+		pl.pipeUnits[idx].SetDone(done)
 	}
 	pl.ilog.Println("Условия завершения работы пайплайна настроены")
 	return pl
@@ -44,12 +47,8 @@ func (pl *Pipeline) Setup(done <-chan struct{}) *Pipeline {
 
 func (pl *Pipeline) Run(source <-chan int) <-chan int {
 	for idx := range pl.pipeUnits {
-		switch pl.pipeUnits[idx].(type) {
-		case *PipeUnitInt:
-			pl.pipeUnits[idx].(*PipeUnitInt).input = source
-			source = pl.pipeUnits[idx].(*PipeUnitInt).Run()
-		}
-
+		pl.pipeUnits[idx].SetInput(source)
+		source = pl.pipeUnits[idx].Run()
 	}
 	pl.ilog.Println("Пайплайн запущен")
 	return source

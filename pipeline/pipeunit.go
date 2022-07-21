@@ -17,7 +17,7 @@ type PipeUnitInt struct {
 	done     <-chan struct{}
 }
 
-func UnitInt(f UnitFunc) *PipeUnitInt {
+func NewUnitInt(f UnitFunc) *PipeUnitInt {
 	l := log.New(os.Stdout, "Unit INFO\t", log.Ldate|log.Ltime)
 	l.Printf("Юнит с функцией %v создан", runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name())
 	return &PipeUnitInt{
@@ -30,4 +30,11 @@ func UnitInt(f UnitFunc) *PipeUnitInt {
 func (pu *PipeUnitInt) Run() <-chan int {
 	pu.ilog.Printf("Юнит с функцией %v запущен", runtime.FuncForPC(reflect.ValueOf(pu.unitFunc).Pointer()).Name())
 	return pu.unitFunc(pu.done, pu.input)
+}
+
+func (pu *PipeUnitInt) SetDone(done <-chan struct{}) {
+	pu.done = done
+}
+func (pu *PipeUnitInt) SetInput(input <-chan int) {
+	pu.input = input
 }

@@ -8,5 +8,5 @@ RUN go install .
 FROM alpine:latest
 WORKDIR /
 COPY --from=build_stage /go/bin .
-RUN apk add libc6-compat
+#RUN apk add libc6-compat
 ENTRYPOINT ./SF20.2.1

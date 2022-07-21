@@ -23,9 +23,9 @@ var elog = log.New(os.Stderr, "Main ERROR\t", log.Ldate|log.Ltime|log.Lshortfile
 
 func main() {
 	done, source := dataSource()
-	negativeFilter := pipeline.UnitInt(negativeFilterInt)
-	divisibleFilter := pipeline.UnitInt(divisibleFilterInt)
-	buffering := pipeline.UnitInt(bufferingInt)
+	negativeFilter := pipeline.NewUnitInt(negativeFilterInt)
+	divisibleFilter := pipeline.NewUnitInt(divisibleFilterInt)
+	buffering := pipeline.NewUnitInt(bufferingInt)
 
 	pipeLine := pipeline.PipelineInt(divisibleFilter, negativeFilter, buffering).Setup(done)
 
@@ -53,8 +53,7 @@ func dataSource() (<-chan struct{}, <-chan int) {
 		scanner := bufio.NewScanner(os.Stdin)
 		var data string
 		fmt.Println("Вводите целые числа. Для выхода наберите exit:")
-		for {
-			scanner.Scan()
+		for scanner.Scan() {
 			data = scanner.Text()
 			if strings.EqualFold(data, "exit") {
 				fmt.Println("Программа завершила работу!")
